@@ -1,0 +1,31 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SurgiNext Hospital Desk</title><link rel="stylesheet" href="style.css"></head><body><div id="app">
+<header><span class="brand">SurgiNext Hospital Desk</span><button class="small" id="so" hidden onclick="out()">Log out</button></header><main>
+<p class="note">DEMO. Use dummy patient data only.</p>
+<section id="in"><h1>Staff log in</h1><label>Email</label><input id="em" type="email"><label>Password</label><input id="pw" type="password"><p class="err" id="er"></p><button class="btn primary" onclick="login()">Log in</button></section>
+<section id="box" hidden><h2>Recent urgent taps</h2><p class="note">Not a monitored emergency system. Patients are told to call the hospital. This only shows what they tapped.</p><div class="card" id="al"></div><h1>Enroll patient</h1><label>Name</label><input id="n"><label>Patient ID</label><input id="i"><label>Phone</label><input id="p" inputmode="numeric"><label>Surgery date</label><input id="d" type="date"><label>Follow-up date (optional)</label><input id="f" type="date">
+<p class="err" id="e3"></p><button class="btn primary" onclick="add()">Enroll</button><h2>Enrolled</h2><div class="card" id="l"></div></section></main></div>
+<script src="config.js"></script><script src="content.js"></script>
+<script>
+const C=CONFIG,$=s=>document.getElementById(s);let tok=sessionStorage.getItem('sn_staff');$('d').value=new Date().toLocaleDateString('sv');
+const H=()=>({apikey:C.SUPABASE_ANON_KEY,Authorization:'Bearer '+tok,'Content-Type':'application/json'});
+const Q=(path,opt={})=>fetch(C.SUPABASE_URL+'/rest/v1/'+path,{...opt,headers:{...H(),Prefer:'return=minimal'}}).then(async r=>{if(r.status==401){out();throw 0}if(!r.ok)throw await r.text();const t=await r.text();return t?JSON.parse(t):null});
+async function login(){$('er').textContent='';try{const r=await fetch(C.SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:C.SUPABASE_ANON_KEY,'Content-Type':'application/json'},body:JSON.stringify({email:$('em').value,password:$('pw').value})});
+ const j=await r.json();if(!j.access_token){$('er').textContent='Wrong email or password.';return}tok=j.access_token;sessionStorage.setItem('sn_staff',tok);start()}catch{$('er').textContent='No connection.'}}
+function out(){tok=null;sessionStorage.removeItem('sn_staff');$('in').hidden=false;$('box').hidden=true;$('so').hidden=true}
+function start(){$('in').hidden=true;$('box').hidden=false;$('so').hidden=false;show()}
+async function add(){$('e3').textContent='';if(!$('n').value||!$('i').value||!$('p').value||!$('d').value){$('e3').textContent='Fill all fields.';return}
+ try{await Q('patients',{method:'POST',body:JSON.stringify({name:$('n').value.trim(),patient_code:$('i').value.trim(),phone:$('p').value.trim(),surgery_date:$('d').value,followup_date:$('f').value||null})});['n','i','p','f'].forEach(x=>$(x).value='');show()}catch(e){if(e)$('e3').textContent='Could not enroll. Is this Patient ID already used?'}}
+async function code(id){const c=String(100000+crypto.getRandomValues(new Uint32Array(1))[0]%900000);await Q('patients?id=eq.'+id,{method:'PATCH',body:JSON.stringify({reset_code:c})});show()}
+async function setfu(id){const v=prompt('Follow-up date (YYYY-MM-DD)');if(v&&/^\d{4}-\d{2}-\d{2}$/.test(v)){await Q('patients?id=eq.'+id,{method:'PATCH',body:JSON.stringify({followup_date:v})});show()}}
+async function del(id){if(confirm('Remove this patient?')){await Q('patients?id=eq.'+id,{method:'DELETE'});show()}}
+async function show(){let r,dl,al;
+ try{[r,dl,al]=await Promise.all([Q('patients?select=id,name,patient_code,reset_code,followup_date&order=surgery_date.desc'),Q('dose_logs?select=patient_id&day=eq.'+new Date().toLocaleDateString('sv')),Q('alerts?select=symptom,created_at,patients(name,patient_code)&order=created_at.desc&limit=10')])}catch{return}
+ const cnt={};(dl||[]).forEach(x=>cnt[x.patient_id]=(cnt[x.patient_id]||0)+1);
+ $('al').innerHTML='';(al||[]).forEach(x=>{const d=document.createElement('div');d.className='row';d.textContent=new Date(x.created_at).toLocaleString('en-IN')+' | '+(x.patients?x.patients.name+' ('+x.patients.patient_code+')':'?')+' | '+x.symptom;$('al').append(d)});if(!(al||[]).length)$('al').textContent='None yet.';
+ $('l').innerHTML='';(r||[]).forEach(p=>{const d=document.createElement('div');d.className='row';const s=document.createElement('span');
+  s.textContent=p.name+' ('+p.patient_code+') | Doses today '+(cnt[p.id]||0)+'/'+CONTENT.doses.length+(p.followup_date?' | Follow-up '+p.followup_date:'')+(p.reset_code?' | Reset code: '+p.reset_code:'');
+  const f=document.createElement('button');f.className='small';f.textContent='Follow-up';f.onclick=()=>setfu(p.id);
+  const a=document.createElement('button');a.className='small';a.textContent='Reset code';a.onclick=()=>code(p.id);
+  const b=document.createElement('button');b.className='small';b.textContent='Remove';b.onclick=()=>del(p.id);d.append(s,f,a,b);$('l').append(d)})}
+if(tok)start();
+</script></body></html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SurgiNext</title><meta name="theme-color" content="#0F5F5C">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Noto+Sans+Bengali:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"></head><body><div id="app">
+<header><span class="brand">SurgiNext</span><button class="lang" id="lang">বাংলা</button></header>
+<main>
+<section class="screen" id="login"><h1 data-i="login"></h1><p class="note">DEMO. Code DEMO, ID DEMO001, phone 9999999999, code 123456. Do not enter real patient data.</p>
+<label data-i="code"></label><input id="hc" autocomplete="off"><label data-i="pid"></label><input id="pid" autocomplete="off"><label data-i="phone"></label><input id="ph" inputmode="numeric">
+<p class="err" id="e1"></p><button class="btn primary" onclick="sendOtp()"><span data-i="next"></span></button></section>
+<section class="screen" id="otp"><h1 data-i="otp"></h1><input id="code" inputmode="numeric" autocomplete="off"><p class="err" id="e2"></p><button class="btn primary" onclick="verify()"><span data-i="verify"></span></button></section>
+<section class="screen" id="consent"><h1 data-i="consentT"></h1><div class="card" style="padding:16px"><p data-i="consent"></p></div><p class="note">PLACEHOLDER. Requires lawyer review (DPDP Act) before real use.</p>
+<button class="btn primary" onclick="consent()"><span data-i="agree"></span></button></section>
+<section class="screen" id="home"><h1 id="nm"></h1><p class="sub" id="dn"></p><div class="path" id="path"></div><h2 data-i="fu"></h2><div class="card" style="padding:16px"><p id="fuT" style="font-weight:700"></p></div>
+<h2 data-i="tip"></h2><div class="card" style="padding:16px"><p id="tip"></p></div><h2 data-i="drops"></h2><div class="card" id="doses"></div>
+<h2 data-i="rem"></h2><div class="card" style="padding:16px"><ul id="rem" style="padding-left:20px"></ul></div><h2 data-i="help"></h2><button class="btn primary" onclick="ask()"><span class="i">💬</span><span data-i="ask"></span></button>
+<p class="note">DEMO: dummy data. Medical text is placeholder until the doctor approves it.</p>
+<button class="link" onclick="logout()" data-i="out"></button></section>
+<section class="screen" id="ask"><button class="back" onclick="home()" data-i="back"></button><h1 data-i="feel"></h1><p class="sub" data-i="tap"></p><div id="syms" style="margin-top:16px"></div></section>
+<section class="screen" id="answer"><button class="back" onclick="ask()" data-i="back"></button><div class="card" style="padding:16px;margin-top:12px"><p id="ans"></p></div>
+<h2 data-i="worse"></h2><button class="btn" onclick="urgent('Getting worse: '+last)"><span class="i">⚠️</span><span data-i="yes"></span></button><button class="btn" onclick="home()"><span class="i">✅</span><span data-i="no"></span></button></section>
+<section class="screen" id="urgent"><button class="back" onclick="ask()" data-i="back"></button><div class="urgent" role="alert"><h1 data-i="urgT"></h1><p data-i="urgB"></p><a class="call tel" href="#">📞 <span data-i="call"></span></a></div></section>
+</main><div class="callbar" hidden><a class="tel" href="#">📞 <span data-i="call"></span></a></div></div>
+<script src="config.js"></script><script src="content.js"></script><script src="app.js"></script></body></html>
